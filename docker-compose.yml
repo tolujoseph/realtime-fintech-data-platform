@@ -41,6 +41,26 @@ services:
       - ./clickhouse/init:/docker-entrypoint-initdb.d
       - ./data/processed/gold:/var/lib/clickhouse/user_files/gold:ro
 
+  airflow:
+    build:
+      context: ./airflow
+      dockerfile: Dockerfile
+    image: fintech-airflow:local
+    container_name: fintech-airflow
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./pipelines:/opt/airflow/pipelines
+      - ./data:/opt/airflow/data
+    command: standalone
+
 volumes:
   kafka-data:
   clickhouse-data:
