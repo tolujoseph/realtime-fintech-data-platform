@@ -39,6 +39,7 @@ services:
     volumes:
       - clickhouse-data:/var/lib/clickhouse
       - ./clickhouse/init:/docker-entrypoint-initdb.d
+      - ./data/processed/gold:/var/lib/clickhouse/user_files/gold:ro
 
 volumes:
   kafka-data:
