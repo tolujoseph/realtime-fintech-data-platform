@@ -168,19 +168,19 @@ Docker Desktop
 Python 3
 Git
 
-# Clone the repository
+## Clone the repository
 
 git clone <repository-url>
 cd realtime-fintech-data-platform
 
-# Create pythong environment
+## Create pythong environment
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install kafka
+## Install kafka
 pip install kafka-python
 
-# Start up the infrastructure
+## Start up the infrastructure
 docker compose up -d --build
 
 This starts:
@@ -228,15 +228,15 @@ CI/CD pipeline for automated testing and deployment
 Monitoring and alerting
 
 ## Key Engineering Decisions
-# Why Kafka?
+## Why Kafka?
 
 Kafka provides a durable event-streaming layer between event producers and downstream processing. This decouples ingestion from transformation and allows consumers to process events independently.
 
-# Why PySpark?
+## Why PySpark?
 
 PySpark provides a scalable processing model for transforming large datasets. The same transformation approach can be extended from local execution to distributed Spark environments.
 
-# Why Medallion Architecture?
+## Why Medallion Architecture?
 
 Separating raw, validated and business-ready data makes the pipeline easier to reason about, debug and reprocess.
 
@@ -244,11 +244,11 @@ Bronze  -> raw source data
 Silver  -> validated data
 Gold    -> analytical data
 
-# Why ClickHouse?
+## Why ClickHouse?
 
 The final workload is analytical rather than transactional, with aggregations across large datasets. ClickHouse's column-oriented architecture is well suited to high-throughput analytical queries.
 
-# Why Airflow?
+## Why Airflow?
 
 Airflow separates orchestration from processing. It manages scheduling, task dependencies, retries and operational visibility while PySpark performs the actual transformations.
 
