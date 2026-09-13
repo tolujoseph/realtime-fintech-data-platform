@@ -16,18 +16,21 @@ with DAG(
         task_id="run_silver",
         bash_command="python /opt/airflow/pipelines/silver/transform.py",
         cwd="/opt/airflow",
+        retries=2,
     )
 
     run_gold = BashOperator(
         task_id="run_gold",
         bash_command="python /opt/airflow/pipelines/gold/transform.py",
         cwd="/opt/airflow",
+        retries=2,
     )
 
     load_clickhouse = BashOperator(
         task_id="load_clickhouse",
         bash_command="python /opt/airflow/pipelines/clickhouse/load.py",
         cwd="/opt/airflow",
+        retries=2,
     )
 
     run_silver >> run_gold >> load_clickhouse

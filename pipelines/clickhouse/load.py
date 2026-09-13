@@ -1,6 +1,7 @@
 import urllib.parse
 import urllib.request
 
+
 CLICKHOUSE_HOST = "fintech-clickhouse"
 CLICKHOUSE_PORT = 8123
 CLICKHOUSE_USER = "default"
@@ -8,10 +9,12 @@ CLICKHOUSE_PASSWORD = "fintech"
 
 
 def execute_query(query):
-    params = urllib.parse.urlencode({
-        "user": CLICKHOUSE_USER,
-        "password": CLICKHOUSE_PASSWORD,
-    })
+    params = urllib.parse.urlencode(
+        {
+            "user": CLICKHOUSE_USER,
+            "password": CLICKHOUSE_PASSWORD,
+        }
+    )
 
     url = f"http://{CLICKHOUSE_HOST}:{CLICKHOUSE_PORT}/?{params}"
 
@@ -26,10 +29,13 @@ def execute_query(query):
 
 
 def main():
+
     queries = [
+
         """
         TRUNCATE TABLE fintech.dim_customer
         """,
+
         """
         INSERT INTO fintech.dim_customer
         SELECT *
@@ -38,9 +44,11 @@ def main():
             Parquet
         )
         """,
+
         """
         TRUNCATE TABLE fintech.dim_merchant
         """,
+
         """
         INSERT INTO fintech.dim_merchant
         SELECT *
@@ -49,9 +57,11 @@ def main():
             Parquet
         )
         """,
+
         """
         TRUNCATE TABLE fintech.dim_date
         """,
+
         """
         INSERT INTO fintech.dim_date
         SELECT *
@@ -60,9 +70,11 @@ def main():
             Parquet
         )
         """,
+
         """
         TRUNCATE TABLE fintech.fact_payment
         """,
+
         """
         INSERT INTO fintech.fact_payment
         SELECT
