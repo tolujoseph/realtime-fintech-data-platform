@@ -26,7 +26,7 @@ with DAG(
 
     load_clickhouse = BashOperator(
         task_id="load_clickhouse",
-        bash_command="echo 'Load Gold data into ClickHouse'",
+        bash_command="python /opt/airflow/pipelines/clickhouse/load.py",
         cwd="/opt/airflow",
     )
 
