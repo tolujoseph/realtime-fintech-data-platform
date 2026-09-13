@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Environment / secrets
+.env
+.env.*
+
+# Generated data
+data/raw/*
+data/processed/*
+
+# Spark / Hadoop generated files
+*.crc
+_SUCCESS
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
