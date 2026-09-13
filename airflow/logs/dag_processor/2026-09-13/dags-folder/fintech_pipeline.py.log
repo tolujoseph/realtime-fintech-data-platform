@@ -77,3 +77,4 @@
 {"timestamp":"2026-09-13T14:47:02.644911","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/fintech_pipeline.py","logger":"airflow.models.dagbag.DagBag"}
 {"timestamp":"2026-09-13T14:47:33.685967","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/fintech_pipeline.py","logger":"airflow.models.dagbag.DagBag"}
 {"timestamp":"2026-09-13T14:48:00.400310","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/fintech_pipeline.py","logger":"airflow.models.dagbag.DagBag"}
+{"timestamp":"2026-09-13T14:48:30.598943","level":"info","event":"Filling up the DagBag from /opt/airflow/dags/fintech_pipeline.py","logger":"airflow.models.dagbag.DagBag"}
