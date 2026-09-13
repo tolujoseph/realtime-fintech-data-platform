@@ -17,12 +17,23 @@ producer = KafkaProducer(
 )
 
 
-MERCHANTS = ["merchant_001", "merchant_002", "merchant_003", "merchant_004"]
-CUSTOMERS = ["customer_001", "customer_002", "customer_003", "customer_004"]
+MERCHANTS = [
+    "merchant_001",
+    "merchant_002",
+    "merchant_003",
+    "merchant_004",
+]
+
+CUSTOMERS = [
+    "customer_001",
+    "customer_002",
+    "customer_003",
+    "customer_004",
+]
 
 
 def generate_payment_event():
-    return {
+    event = {
         "event_id": str(uuid.uuid4()),
         "customer_id": random.choice(CUSTOMERS),
         "merchant_id": random.choice(MERCHANTS),
@@ -30,6 +41,29 @@ def generate_payment_event():
         "currency": "GBP",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+    # Occasionally generate invalid data
+    bad_event_type = random.choice(
+        [
+            "valid",
+            "valid",
+            "valid",
+            "negative_amount",
+            "missing_customer",
+            "bad_currency",
+        ]
+    )
+
+    if bad_event_type == "negative_amount":
+        event["amount"] = -event["amount"]
+
+    elif bad_event_type == "missing_customer":
+        event["customer_id"] = None
+
+    elif bad_event_type == "bad_currency":
+        event["currency"] = "XYZ"
+
+    return event
 
 
 def main():

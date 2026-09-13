@@ -1,15 +1,21 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
+from pyspark.sql.functions import (
+    col,
+    concat_ws,
+    lit,
+    when,
+)
 from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
     DoubleType,
+    StringType,
+    StructField,
+    StructType,
 )
 
 
 BRONZE_PATH = "data/raw/bronze.jsonl"
 SILVER_PATH = "data/processed/silver"
+QUARANTINE_PATH = "data/processed/quarantine"
 
 
 def create_spark_session():
@@ -24,8 +30,9 @@ def create_spark_session():
 def main():
     spark = create_spark_session()
 
+    # Define the expected Bronze schema
     schema = StructType([
-        StructField("event_id", StringType(), False),
+        StructField("event_id", StringType(), True),
         StructField("customer_id", StringType(), True),
         StructField("merchant_id", StringType(), True),
         StructField("amount", DoubleType(), True),
@@ -33,27 +40,107 @@ def main():
         StructField("timestamp", StringType(), True),
     ])
 
+    # Read raw Bronze data
     bronze_df = (
         spark.read
         .schema(schema)
         .json(BRONZE_PATH)
     )
 
-    print("Bronze schema:")
-    bronze_df.printSchema()
+    bronze_count = bronze_df.count()
 
-    print("Bronze record count:", bronze_df.count())
+    print("Bronze record count:", bronze_count)
 
-    silver_df = (
-        bronze_df
-        .dropDuplicates(["event_id"])
-        .filter(col("customer_id").isNotNull())
-        .filter(col("merchant_id").isNotNull())
-        .filter(col("amount") > 0)
-        .filter(col("currency") == "GBP")
+    # ---------------------------------------------------------
+    # DATA QUALITY RULES
+    # ---------------------------------------------------------
+
+    customer_rule = col("customer_id").isNull()
+
+    merchant_rule = col("merchant_id").isNull()
+
+    amount_rule = (
+        col("amount").isNull()
+        | (col("amount") <= 0)
     )
 
-    print("Silver record count:", silver_df.count())
+    currency_rule = col("currency") != "GBP"
+
+    # ---------------------------------------------------------
+    # BUILD REJECTION REASONS
+    # ---------------------------------------------------------
+
+    rejection_reason = concat_ws(
+        "; ",
+        when(
+            customer_rule,
+            lit("customer_id is null")
+        ),
+        when(
+            merchant_rule,
+            lit("merchant_id is null")
+        ),
+        when(
+            amount_rule,
+            lit("amount is null or <= 0")
+        ),
+        when(
+            currency_rule,
+            lit("invalid currency")
+        ),
+    )
+
+    validated_df = bronze_df.withColumn(
+        "rejection_reason",
+        rejection_reason,
+    )
+
+    # ---------------------------------------------------------
+    # QUARANTINE INVALID RECORDS
+    # ---------------------------------------------------------
+
+    quarantine_df = (
+        validated_df
+        .filter(col("rejection_reason") != "")
+    )
+
+    # ---------------------------------------------------------
+    # SILVER VALID RECORDS
+    # ---------------------------------------------------------
+
+    silver_df = (
+        validated_df
+        .filter(col("rejection_reason") == "")
+        .drop("rejection_reason")
+        .dropDuplicates(["event_id"])
+    )
+
+    valid_count = silver_df.count()
+    quarantine_count = quarantine_df.count()
+
+    # ---------------------------------------------------------
+    # DATA QUALITY SUMMARY
+    # ---------------------------------------------------------
+
+    print("\nData Quality Summary")
+    print("--------------------")
+    print("Bronze records:", bronze_count)
+    print("Valid records:", valid_count)
+    print("Quarantined records:", quarantine_count)
+
+    print("\nRejection reasons:")
+
+    (
+        quarantine_df
+        .groupBy("rejection_reason")
+        .count()
+        .orderBy(col("count").desc())
+        .show(truncate=False)
+    )
+
+    # ---------------------------------------------------------
+    # WRITE SILVER
+    # ---------------------------------------------------------
 
     (
         silver_df
@@ -62,7 +149,19 @@ def main():
         .parquet(SILVER_PATH)
     )
 
+    # ---------------------------------------------------------
+    # WRITE QUARANTINE
+    # ---------------------------------------------------------
+
+    (
+        quarantine_df
+        .write
+        .mode("overwrite")
+        .parquet(QUARANTINE_PATH)
+    )
+
     print(f"Silver data written to {SILVER_PATH}")
+    print(f"Quarantine data written to {QUARANTINE_PATH}")
 
     spark.stop()
 

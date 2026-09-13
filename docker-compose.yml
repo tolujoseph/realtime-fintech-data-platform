@@ -26,5 +26,16 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: fintech-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./clickhouse/init:/docker-entrypoint-initdb.d
+
 volumes:
   kafka-data:
+  clickhouse-data:
